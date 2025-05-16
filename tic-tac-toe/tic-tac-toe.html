@@ -1,0 +1,223 @@
+<html>
+<head>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: lightcyan;
+            text-align: center;
+        }
+        .container {
+            height: 70vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .game {
+            height: 60vmin;
+            width: 60vmin;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5vmin;
+            justify-content: center;
+        }
+        .box {
+            height: 18vmin;
+            width: 18vmin;
+            border-radius: 1rem;
+            border: none;
+            box-shadow: 0 0 1rem rgba(0,0,0,0.3);
+            font-size: 8vmin;
+            color: red;
+            background-color: yellow;
+        }
+        #reset, #new-btn, #mode-select {
+            padding: 1rem;
+            font-size: 1.25rem;
+            background: #191913;
+            color: white;
+            border-radius: 1rem;
+            border: none;
+            margin: 0.5rem;
+        }
+        .box:hover {
+            background-color: chocolate;
+        }
+        #msg {
+            font-size: 8vmin;
+        }
+        .msg-container {
+            height: 30vmin;
+        }
+        .hide {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="msg-container hide">
+        <p id="msg">Winner</p>
+        <button id="new-btn">New Game</button>
+    </div>
+    <main>
+        <h1>Tic Tac Toe</h1>
+
+        <div>
+            <button id="human-btn">Play vs Human</button>
+            <button id="computer-btn">Play vs Computer</button>
+        </div>
+
+        <div class="container">
+            <div class="game">
+                <button class="box"></button>
+                <button class="box"></button>
+                <button class="box"></button>
+                <button class="box"></button>
+                <button class="box"></button>
+                <button class="box"></button>
+                <button class="box"></button>
+                <button class="box"></button>
+                <button class="box"></button>
+            </div>
+        </div>
+        <button id="reset">Reset Game</button>
+    </main>
+
+    <script>
+        let boxes = document.querySelectorAll('.box');
+        let resetBtn = document.querySelector('#reset');
+        let newGameBtn = document.querySelector('#new-btn');
+        let msgContainer = document.querySelector('.msg-container');
+        let msg = document.querySelector('#msg');
+        let humanBtn = document.querySelector('#human-btn');
+        let computerBtn = document.querySelector('#computer-btn');
+
+        let playAgainstComputer = false;
+        let turnO = true; // true -> O's turn, false -> X's turn
+
+        const winPatterns = [
+            [0, 1, 2],
+            [0, 3, 6],
+            [0, 4, 8],
+            [1, 4, 7],
+            [2, 5, 8],
+            [2, 4, 6],
+            [3, 4, 5],
+            [6, 7, 8]
+        ];
+
+        const enableBoxes = () => {
+            for (let box of boxes) {
+                box.disabled = false;
+                box.innerText = "";
+                box.style.backgroundColor = "yellow";
+            }
+        };
+
+        const disableBoxes = () => {
+            for (let box of boxes) {
+                box.disabled = true;
+            }
+        };
+
+        const showWinner = (winner, pattern) => {
+    pattern.forEach(index => {
+        boxes[index].style.backgroundColor = 'lightgreen';
+    });
+    msg.innerText = `Congratulations, Winner is ${winner}`;
+    msgContainer.classList.remove('hide');
+    disableBoxes();
+};
+
+const checkWinner = () => {
+    for (let pattern of winPatterns) {
+        let [a, b, c] = pattern;
+        let pos1Val = boxes[a].innerText;
+        let pos2Val = boxes[b].innerText;
+        let pos3Val = boxes[c].innerText;
+
+        if (pos1Val !== "" && pos1Val === pos2Val && pos2Val === pos3Val) {
+            showWinner(pos1Val, pattern);
+            return true;
+        }
+    }
+
+    if ([...boxes].every((box) => box.innerText !== "")) {
+        msg.innerText = 'Match Drawn';
+        msgContainer.classList.remove('hide');
+        return true;
+    }
+
+    return false;
+};
+
+
+        const computerMove = () => {
+            // Simple AI: choose first empty box
+            for (let box of boxes) {
+                if (box.innerText === "") {
+                    box.innerText = 'X';
+                    box.style.color = 'black';
+                    box.disabled = true;
+                    break;
+                }
+            }
+            checkWinner();
+            turnO = true; // back to human
+        };
+
+        boxes.forEach((box) => {
+            box.addEventListener('click', function () {
+                if (box.innerText !== "") return; // Prevent clicking twice
+
+                if (turnO) {
+                    box.innerText = 'O';
+                    box.style.color = 'green';
+                    box.disabled = true;
+                    let gameOver = checkWinner();
+                    if (!gameOver) {
+                        turnO = false;
+                        if (playAgainstComputer) {
+                            setTimeout(computerMove, 500); // AI move after short delay
+                        }
+                    }
+                } else {
+                    if (!playAgainstComputer) {
+                        box.innerText = 'X';
+                        box.style.color = 'black';
+                        box.disabled = true;
+                        let gameOver = checkWinner();
+                        if (!gameOver) {
+                            turnO = true;
+                        }
+                    }
+                }
+            });
+        });
+
+        const resetGame = () => {
+            turnO = true;
+            enableBoxes();
+            msgContainer.classList.add('hide');
+        };
+
+        newGameBtn.addEventListener('click', resetGame);
+        resetBtn.addEventListener('click', resetGame);
+
+        humanBtn.addEventListener('click', () => {
+            playAgainstComputer = false;
+            resetGame();
+            alert('Playing against another Human');
+        });
+
+        computerBtn.addEventListener('click', () => {
+            playAgainstComputer = true;
+            resetGame();
+            alert('Playing against Computer (AI)');
+        });
+
+    </script>
+</body>
+</html>
